@@ -9,41 +9,42 @@ using namespace std;
 const int maxn = 100005;
 
 // the graph
-vector<vector<int>> g(maxn);
+vector<vector<int>> graph(maxn);
 
 // level of each node
-int level[maxn];
+int nodeLevel[maxn];
 
 vector<int> dfsTraversal;
 vector<int> l;
 int h[maxn];
 
-// the segment tree
-int st[5 * maxn];
+int segmentTree[5 * maxn];
 
-// assigning level to nodes
-void leveling(int src) {
-    for (int i = 0; i < g[src].size(); i++) {
-        int des = g[src][i];
-        if (!level[des]) {
-            level[des] = level[src] + 1;
-            leveling(des);
+void updateNodesLevel(int root)
+{
+    for (int i = 0; i < graph[root].size(); i++)
+    {
+        int child = graph[root][i];
+        if (!nodeLevel[child])
+        {
+            nodeLevel[child] = nodeLevel[root] + 1;
+            updateNodesLevel(child);
         }
     }
 }
 
-bool visited[maxn];
+bool visitedNodesForDfs[maxn];
 
-void dfs(int startVertex) {
-    dfsTraversal.push_back(startVertex);
-    visited[startVertex] = 1;
-    for (int i = 0; i < g[startVertex].size(); i++)
+void dfs(int root) {
+    dfsTraversal.push_back(root);
+    visitedNodesForDfs[root] = 1;
+    for (int i = 0; i < graph[root].size(); i++)
     {
-        int childVertex = g[startVertex][i];
-        if (!visited[childVertex])
+        int childVertex = graph[root][i];
+        if (!visitedNodesForDfs[childVertex])
         {
             dfs(childVertex);
-            dfsTraversal.push_back(startVertex);
+            dfsTraversal.push_back(root);
         }
     }
 }
@@ -51,7 +52,7 @@ void dfs(int startVertex) {
 // making the array l
 void setting_l(int n) {
     for (int i = 0; i < dfsTraversal.size(); i++)
-        l.push_back(level[dfsTraversal[i]]);
+        l.push_back(nodeLevel[dfsTraversal[i]]);
 }
 
 // making the array h
@@ -77,7 +78,7 @@ int RMQ(int ss, int se, int qs, int qe, int i) {
     
     // in the range
     if (qs <= ss && se <= qe)
-        return st[i];
+        return segmentTree[i];
     
     int mid = (ss + se) >> 1;
     int st = RMQ(ss, mid, qs, qe, 2 * i + 1);
@@ -101,7 +102,7 @@ void SegmentTreeConstruction(int ss, int se, int i) {
         return;
     if (ss == se) // leaf
     {
-        st[i] = ss;
+        segmentTree[i] = ss;
         return;
     }
     int mid = (ss + se) >> 1;
@@ -109,10 +110,10 @@ void SegmentTreeConstruction(int ss, int se, int i) {
     SegmentTreeConstruction(ss, mid, 2 * i + 1);
     SegmentTreeConstruction(mid + 1, se, 2 * i + 2);
     
-    if (l[st[2 * i + 1]] < l[st[2 * i + 2]])
-        st[i] = st[2 * i + 1];
+    if (l[segmentTree[2 * i + 1]] < l[segmentTree[2 * i + 2]])
+        segmentTree[i] = segmentTree[2 * i + 1];
     else
-        st[i] = st[2 * i + 2];
+        segmentTree[i] = segmentTree[2 * i + 2];
 }
 
 // Funtion to get LCA
@@ -131,12 +132,12 @@ int main() {
         int u, v;
         std::cin >> u >> v;
         
-        g[u].push_back(v);
-        g[v].push_back(u);
+        graph[u].push_back(v);
+        graph[v].push_back(u);
     }
     
-    level[1] = 1;
-    leveling(1);
+    nodeLevel[1] = 1;
+    updateNodesLevel(1);
     
     dfs(1);
     
