@@ -4,17 +4,15 @@
 #include <algorithm>
 #include <climits>
 
-using namespace std;
-
 int vertexCount;
 
-vector<vector<int>> graph;
-vector<int> nodeLevel;
-vector<int> dfsTraversal;
-vector<int> l;
-vector<int> h;
-vector<int> segmentTree;
-vector<bool> visitedNodesForDfs;
+std::vector<std::vector<int>> graph;
+std::vector<int> nodeLevel;
+std::vector<int> dfsTraversal;
+std::vector<int> l;
+std::vector<int> h;
+std::vector<int> segmentTree;
+std::vector<bool> visitedNodesForDfs;
 
 void updateNodesLevel(int root)
 {
@@ -30,7 +28,8 @@ void updateNodesLevel(int root)
 }
 
 
-void dfs(int root) {
+void dfs(int root)
+{
     dfsTraversal.push_back(root);
     visitedNodesForDfs[root] = 1;
     for (int i = 0; i < graph[root].size(); i++)
@@ -44,58 +43,83 @@ void dfs(int root) {
     }
 }
 
-void setting_l(int n) {
+void setting_l(int n)
+{
     for (int i = 0; i < dfsTraversal.size(); i++)
+    {
         l.push_back(nodeLevel[dfsTraversal[i]]);
-}
-
-void setting_h(int n) {
-    for (int i = 0; i <= n; i++)
-        h[i] = -1;
-    for (int i = 0; i < dfsTraversal.size(); i++) {
-        if (h[dfsTraversal[i]] == -1)
-            h[dfsTraversal[i]] = i;
     }
 }
 
-int RMQ(int ss, int se, int qs, int qe, int i) {
+void setting_h(int n)
+{
+    for (int i = 0; i <= n; i++)
+    {
+        h[i] = -1;
+    }
+    for (int i = 0; i < dfsTraversal.size(); i++)
+    {
+        if (h[dfsTraversal[i]] == -1)
+        {
+            h[dfsTraversal[i]] = i;
+        }
+    }
+}
+
+int RMQ(int ss, int se, int qs, int qe, int i)
+{
     if (ss > se)
+    {
         return -1;
+    }
     
     if (se < qs || qe < ss)
+    {
         return -1;
+    }
     
     if (qs <= ss && se <= qe)
+    {
         return segmentTree[i];
+    }
     
     int mid = (ss + se) >> 1;
     int st = RMQ(ss, mid, qs, qe, 2 * i + 1);
     int en = RMQ(mid + 1, se, qs, qe, 2 * i + 2);
     
-    if (st != -1 && en != -1) {
+    if (st != -1 && en != -1)
+    {
         if (l[st] < l[en])
+        {
             return st;
+        }
         return en;
-    } else if (st != -1)
+    }
+    else if (st != -1)
+    {
         return st;
+    }
     else if (en != -1)
+    {
         return en;
+    }
     
     return -1;
 }
 
-void SegmentTreeConstruction(int ss, int se, int i) {
-    if (ss > se)
+void buildSegmentTree(int startIndex, int finishIndex, int i)
+{
+    if (startIndex > finishIndex)
         return;
-    if (ss == se) // leaf
+    if (startIndex == finishIndex) // leaf
     {
-        segmentTree[i] = ss;
+        segmentTree[i] = startIndex;
         return;
     }
-    int mid = (ss + se) >> 1;
+    int mid = (startIndex + finishIndex) >> 1;
     
-    SegmentTreeConstruction(ss, mid, 2 * i + 1);
-    SegmentTreeConstruction(mid + 1, se, 2 * i + 2);
+    buildSegmentTree(startIndex, mid, 2 * i + 1);
+    buildSegmentTree(mid + 1, finishIndex, 2 * i + 2);
     
     if (l[segmentTree[2 * i + 1]] < l[segmentTree[2 * i + 2]])
         segmentTree[i] = segmentTree[2 * i + 1];
@@ -105,7 +129,7 @@ void SegmentTreeConstruction(int ss, int se, int i) {
 
 int LCA(int u, int v) {
     if (h[u] > h[v])
-        swap(u, v);
+        std::swap(u, v);
     return dfsTraversal[RMQ(0, l.size() - 1, h[u], h[v], 0)];
 }
 
@@ -130,14 +154,14 @@ void fillGraph()
     }
 }
 
-void intiDataStructure()
+void buildDataStructure()
 {
     nodeLevel[0] = 1;
     updateNodesLevel(0);
     dfs(0);
     setting_l(vertexCount - 1);
     setting_h(vertexCount - 1);
-    SegmentTreeConstruction(0, l.size() - 1, 0);
+    buildSegmentTree(0, l.size() - 1, 0);
 }
 
 void answearQuestions()
@@ -153,11 +177,14 @@ void answearQuestions()
 }
 
 int main() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    
     std::cin >> vertexCount;
     
     resizeObjects();
     fillGraph();
-    intiDataStructure();
+    buildDataStructure();
     answearQuestions();
     
     return 0;
