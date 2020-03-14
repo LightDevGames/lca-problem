@@ -6,19 +6,15 @@
 
 using namespace std;
 
-const int maxn = 100005;
+int vertexCount;
 
-// the graph
-vector<vector<int>> graph(maxn);
-
-// level of each node
-int nodeLevel[maxn];
-
+vector<vector<int>> graph;
+vector<int> nodeLevel;
 vector<int> dfsTraversal;
 vector<int> l;
-int h[maxn];
-
-int segmentTree[5 * maxn];
+vector<int> h;
+vector<int> segmentTree;
+vector<bool> visitedNodesForDfs;
 
 void updateNodesLevel(int root)
 {
@@ -33,7 +29,6 @@ void updateNodesLevel(int root)
     }
 }
 
-bool visitedNodesForDfs[maxn];
 
 void dfs(int root) {
     dfsTraversal.push_back(root);
@@ -49,34 +44,27 @@ void dfs(int root) {
     }
 }
 
-// making the array l
 void setting_l(int n) {
     for (int i = 0; i < dfsTraversal.size(); i++)
         l.push_back(nodeLevel[dfsTraversal[i]]);
 }
 
-// making the array h
 void setting_h(int n) {
     for (int i = 0; i <= n; i++)
         h[i] = -1;
     for (int i = 0; i < dfsTraversal.size(); i++) {
-        // if is already stored
         if (h[dfsTraversal[i]] == -1)
             h[dfsTraversal[i]] = i;
     }
 }
 
-// Range minimum query to return the index
-// of minimum in the subarray L[qs:qe]
 int RMQ(int ss, int se, int qs, int qe, int i) {
     if (ss > se)
         return -1;
     
-    // out of range
     if (se < qs || qe < ss)
         return -1;
     
-    // in the range
     if (qs <= ss && se <= qe)
         return segmentTree[i];
     
@@ -96,7 +84,6 @@ int RMQ(int ss, int se, int qs, int qe, int i) {
     return -1;
 }
 
-// constructs the segment tree
 void SegmentTreeConstruction(int ss, int se, int i) {
     if (ss > se)
         return;
@@ -116,17 +103,23 @@ void SegmentTreeConstruction(int ss, int se, int i) {
         segmentTree[i] = segmentTree[2 * i + 2];
 }
 
-// Funtion to get LCA
 int LCA(int u, int v) {
     if (h[u] > h[v])
         swap(u, v);
     return dfsTraversal[RMQ(0, l.size() - 1, h[u], h[v], 0)];
 }
 
-int main() {
-    int vertexCount;
-    std::cin >> vertexCount;
-    
+void resizeObjects()
+{
+    graph.resize(vertexCount);
+    nodeLevel.resize(vertexCount);
+    h.resize(vertexCount);
+    visitedNodesForDfs.resize(vertexCount);
+    segmentTree.resize(5 * vertexCount);
+}
+
+void fillGraph()
+{
     for(int i = 0; i < vertexCount - 1; i++)
     {
         int u, v;
@@ -135,17 +128,20 @@ int main() {
         graph[u].push_back(v);
         graph[v].push_back(u);
     }
-    
+}
+
+void intiDataStructure()
+{
     nodeLevel[0] = 1;
     updateNodesLevel(0);
-    
     dfs(0);
-    
     setting_l(vertexCount - 1);
     setting_h(vertexCount - 1);
-    
     SegmentTreeConstruction(0, l.size() - 1, 0);
+}
 
+void answearQuestions()
+{
     int c;
     std::cin >> c;
     for(int i = 0; i < c; i++)
@@ -154,6 +150,15 @@ int main() {
         std::cin >> a >> b;
         std::cout << LCA(a, b) << std::endl;
     }
+}
+
+int main() {
+    std::cin >> vertexCount;
+    
+    resizeObjects();
+    fillGraph();
+    intiDataStructure();
+    answearQuestions();
     
     return 0;
 }
