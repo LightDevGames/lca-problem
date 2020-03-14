@@ -136,13 +136,13 @@ int main() {
         graph[v].push_back(u);
     }
     
-    nodeLevel[1] = 1;
-    updateNodesLevel(1);
+    nodeLevel[0] = 1;
+    updateNodesLevel(0);
     
-    dfs(1);
+    dfs(0);
     
-    setting_l(vertexCount);
-    setting_h(vertexCount);
+    setting_l(vertexCount - 1);
+    setting_h(vertexCount - 1);
     
     SegmentTreeConstruction(0, l.size() - 1, 0);
 
