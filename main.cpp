@@ -14,21 +14,6 @@ std::vector<int> nodeFirstMentionInDfs;
 std::vector<int> segmentTree;
 std::vector<bool> visitedNodesForDfs;
 
-void dfs(int root)
-{
-    dfsTraversal.push_back(root);
-    visitedNodesForDfs[root] = 1;
-    for (int i = 0; i < graph[root].size(); i++)
-    {
-        int childVertex = graph[root][i];
-        if (!visitedNodesForDfs[childVertex])
-        {
-            dfs(childVertex);
-            dfsTraversal.push_back(root);
-        }
-    }
-}
-
 void updateNodesLevel(int root)
 {
     for (int i = 0; i < graph[root].size(); i++)
@@ -42,11 +27,21 @@ void updateNodesLevel(int root)
     }
 }
 
-void buildTraversalNodesLevels(int n)
+void dfs(int root)
 {
-    for (int i = 0; i < dfsTraversal.size(); i++)
+    dfsTraversal.push_back(root);
+    dfsTraversalNodesLevels.push_back(nodesLevels[root]);
+    
+    visitedNodesForDfs[root] = 1;
+    for (int i = 0; i < graph[root].size(); i++)
     {
-        dfsTraversalNodesLevels.push_back(nodesLevels[dfsTraversal[i]]);
+        int childVertex = graph[root][i];
+        if (!visitedNodesForDfs[childVertex])
+        {
+            dfs(childVertex);
+            dfsTraversal.push_back(root);
+            dfsTraversalNodesLevels.push_back(nodesLevels[root]);
+        }
     }
 }
 
@@ -110,7 +105,7 @@ void buildSegmentTree(int startIndex, int finishIndex, int i)
 {
     if (startIndex > finishIndex)
         return;
-    if (startIndex == finishIndex) // leaf
+    if (startIndex == finishIndex)
     {
         segmentTree[i] = startIndex;
         return;
@@ -121,15 +116,26 @@ void buildSegmentTree(int startIndex, int finishIndex, int i)
     buildSegmentTree(mid + 1, finishIndex, 2 * i + 2);
     
     if (dfsTraversalNodesLevels[segmentTree[2 * i + 1]] < dfsTraversalNodesLevels[segmentTree[2 * i + 2]])
+    {
         segmentTree[i] = segmentTree[2 * i + 1];
+    }
     else
+    {
         segmentTree[i] = segmentTree[2 * i + 2];
+    }
 }
 
-int LCA(int u, int v) {
+int LCA(int u, int v)
+{
     if (nodeFirstMentionInDfs[u] > nodeFirstMentionInDfs[v])
+    {
         std::swap(u, v);
-    return dfsTraversal[RMQ(0, dfsTraversalNodesLevels.size() - 1, nodeFirstMentionInDfs[u], nodeFirstMentionInDfs[v], 0)];
+    }
+    
+    return dfsTraversal
+    [
+      RMQ(0, dfsTraversal.size() - 1, nodeFirstMentionInDfs[u], nodeFirstMentionInDfs[v], 0)
+    ];
 }
 
 void resizeObjects()
@@ -158,7 +164,6 @@ void buildDataStructure()
     nodesLevels[0] = 1;
     updateNodesLevel(0);
     dfs(0);
-    buildTraversalNodesLevels(vertexCount - 1);
     buildFirstMentionInDfs(vertexCount - 1);
     buildSegmentTree(0, dfsTraversalNodesLevels.size() - 1, 0);
 }
