@@ -152,13 +152,13 @@ void resizeVectors()
 
 void fillGraph()
 {
-    for(int i = 0; i < vertexCount - 1; i++)
+    for(int i = 1; i < vertexCount; i++)
     {
-        int u, v;
-        std::cin >> u >> v;
+        int parent;
+        std::cin >> parent;
         
-        graph[u].push_back(v);
-        graph[v].push_back(u);
+        graph[i].push_back(parent);
+        graph[parent].push_back(i);
     }
 }
 
@@ -171,29 +171,38 @@ void buildDataStructure()
     buildSegmentTree(0, dfsTraversal.size() - 1, 0);
 }
 
-void answearQuestions()
-{
-    int c;
-    std::cin >> c;
-    for(int i = 0; i < c; i++)
-    {
-        int a, b;
-        std::cin >> a >> b;
-        std::cout << LCA(a, b) << std::endl;
-    }
-}
 
 int main()
 {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
     
-    std::cin >> vertexCount;
+    int questionsCount, a1, a2, x, y, z;;
+    std::cin >> vertexCount >> questionsCount;
     
     resizeVectors();
     fillGraph();
     buildDataStructure();
-    answearQuestions();
+    
+    std::cin >> a1 >> a2 >> x >> y >> z;
+    
+    int sum = 0;
+    int res = LCA(a1, a2);
+    sum += res;
+
+    for(int i = 1; i < questionsCount; i++)
+    {
+        if(res == a1 || res == a2)
+            a1 = (x * a1 + y * a2 + z + res) % vertexCount;
+        else
+            a1 = (x * a1 + y * a2 + z) % vertexCount;
+        a2 = (x * a2 + y * a1 + z) % vertexCount;
+        
+        res = LCA(a1, a2);
+        sum += res;
+    }
+    
+    std::cout << sum;
     
     return 0;
 }
