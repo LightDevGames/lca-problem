@@ -4,31 +4,52 @@
 
 #define MAX 500001
 
-std::vector<std::pair<int,int> > g[MAX];
+struct ToDo
+{
+    int adjacentVertex;
+    int weight;
+    
+    ToDo(int vertex, int w)
+    {
+        adjacentVertex = vertex;
+        weight = w;
+    }
+};
 
-int timeInNode[MAX], timeOutNode[MAX], distanceToRoot[MAX];
-int up[MAX][20];
+std::vector<std::vector<ToDo>> graphAdjencyList(MAX);
 
-int logarifm;
+std::vector<int> timeInNode(MAX);
+std::vector<int> timeOutNode(MAX);
+std::vector<int> distanceToRoot(MAX);
+
+std::vector<std::vector<int>> up(MAX);
+
+int logarithm;
 
 int passedNodesCount = 0;
-void dfs (int v, int p = 0, int lengthToRoot = 0)
+void dfs (int vertex, int parent, int lengthToRoot)
 {
-    int i, to;
-    timeInNode[v] = passedNodesCount++;
-    up[v][0] = p;
-    distanceToRoot[v] = lengthToRoot;
+    timeInNode[vertex] = passedNodesCount;
+    passedNodesCount++;
+    up[vertex][0] = parent;
+    distanceToRoot[vertex] = lengthToRoot;
     
-    for(i = 1; i <= logarifm; i++)
-        up[v][i] = up[up[v][i-1]][i-1];
-    
-    for(i = 0; i < g[v].size(); i++)
+    for(int i = 1; i <= logarithm; i++)
     {
-        to = g[v][i].first;
-        if (to != p) dfs (to, v, lengthToRoot + g[v][i].second);
+        up[vertex][i] = up[up[vertex][i-1]][i-1];
     }
     
-    timeOutNode[v] = passedNodesCount++;
+    for(int i = 0; i < graphAdjencyList[vertex].size(); i++)
+    {
+        int adjencyVertex = graphAdjencyList[vertex][i].adjacentVertex;
+        if (adjencyVertex != parent)
+        {
+            dfs(adjencyVertex, vertex, lengthToRoot + graphAdjencyList[vertex][i].weight);
+        }
+    }
+    
+    timeOutNode[vertex] = passedNodesCount;
+    passedNodesCount++;
 }
 
 int getParentNodeIndex(int u, int v)
@@ -41,7 +62,7 @@ int LCA(int u, int v)
     if (getParentNodeIndex(u, v)) return u;
     if (getParentNodeIndex(v, u)) return v;
     
-    for (int i = logarifm; i >= 0; i--)
+    for (int i = logarithm; i >= 0; i--)
         if (!getParentNodeIndex(up[u][i], v)) u = up[u][i];
     
     return up[u][0];
@@ -52,17 +73,24 @@ int main()
     int nodesCount;
     std::cin >> nodesCount;
     
+    for(int i = 0; i < up.size(); i++)
+    {
+        up[i].resize(20);
+    }
+    
     for(int i = 0; i < nodesCount - 1; i++)
     {
         int u, v, w;
         std::cin >> u >> v >> w;
         
-        g[u].push_back(std::make_pair(v,w));
-        g[v].push_back(std::make_pair(u,w));
+        ToDo t1(v, w);
+        ToDo t2(u, w);
+        graphAdjencyList[u].push_back(t1);
+        graphAdjencyList[v].push_back(t2);
     }
     
-    logarifm = log(nodesCount);
-    dfs(0);
+    logarithm = log(nodesCount);
+    dfs(0, 0, 0);
     
     int questionsCount;
     std::cin >> questionsCount;
