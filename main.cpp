@@ -7,6 +7,7 @@
 int vertexCount;
 
 std::vector<std::vector<int>> graph;
+std::vector<int> parentGraph;
 std::vector<int> nodesLevels;
 std::vector<int> dfsTraversal;
 std::vector<int> dfsTraversalNodesLevels;
@@ -127,6 +128,16 @@ void buildSegmentTree(int startIndex, int finishIndex, int currentIndex)
 
 int LCA(int vertexU, int vertexV)
 {
+    if(vertexU == 0 || vertexV == 0)
+    {
+        return 0;
+    }
+    
+    if(vertexU == vertexV)
+    {
+        return parentGraph[vertexU];
+    }
+    
     if (nodeFirstMentionInDfs[vertexU] > nodeFirstMentionInDfs[vertexV])
     {
         std::swap(vertexU, vertexV);
@@ -141,6 +152,7 @@ int LCA(int vertexU, int vertexV)
 void resizeVectors()
 {
     graph.resize(vertexCount);
+    parentGraph.resize(vertexCount);
     
     nodesLevels.resize(vertexCount);
     
@@ -159,6 +171,7 @@ void fillGraph()
         
         graph[i].push_back(parent);
         graph[parent].push_back(i);
+        parentGraph[i] = parent;
     }
 }
 
@@ -177,30 +190,27 @@ int main()
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(nullptr);
     
-    int questionsCount, a1, a2, x, y, z;;
+    int questionsCount;
     std::cin >> vertexCount >> questionsCount;
     
     resizeVectors();
     fillGraph();
     buildDataStructure();
     
+    int a1, a2, x, y, z;
     std::cin >> a1 >> a2 >> x >> y >> z;
     
     int sum = 0;
     int res = LCA(a1, a2);
     sum += res;
-
-    for(int i = 1; i < questionsCount; i++)
-    {
-        if(res == a1 || res == a2)
-            a1 = (x * a1 + y * a2 + z + res) % vertexCount;
-        else
-            a1 = (x * a1 + y * a2 + z) % vertexCount;
-        a2 = (x * a2 + y * a1 + z) % vertexCount;
-        
-        res = LCA(a1, a2);
-        sum += res;
-    }
+//    for(int i = 1; i < questionsCount; i++)
+//    {
+//        a1 = ((x * a1 + y * a2 + z) % vertexCount + res) % vertexCount;
+//        a2 = (x * a2 + y * a1 + z) % vertexCount;
+//
+//        res = LCA(a1, a2);
+//        sum += res;
+//    }
     
     std::cout << sum;
     
